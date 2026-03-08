@@ -1,16 +1,21 @@
-package vehicle_service.dto.request;
+package vehicle_service.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Entity(name="vehicle")
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
-public class VehicleRequestDto {
+@Getter
+@Setter
+@Builder
+public class Vehicle {
+    @Id
+    private String id;
     private String make;
     private String brand;
     private String model;

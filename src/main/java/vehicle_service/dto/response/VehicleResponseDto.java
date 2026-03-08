@@ -1,16 +1,19 @@
-package vehicle_service.dto.request;
+package vehicle_service.dto.response;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Data
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
-public class VehicleRequestDto {
+@Builder
+public class VehicleResponseDto {
+    private String id;
     private String make;
     private String brand;
     private String model;
