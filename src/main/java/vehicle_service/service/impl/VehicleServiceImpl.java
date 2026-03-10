@@ -7,6 +7,7 @@ import vehicle_service.dto.request.VehicleRequestDto;
 import vehicle_service.dto.response.VehicleResponseDto;
 import vehicle_service.dto.response.paginate.VehicleResponsePaginatedDto;
 import vehicle_service.entity.Vehicle;
+import vehicle_service.exception.EntryNotFoundException;
 import vehicle_service.repo.VehicleRepo;
 import vehicle_service.service.VehicleService;
 
@@ -28,7 +29,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void updateVehicle(VehicleRequestDto dto, String id) {
         Vehicle vehicle = vehicleRepo.findById(id)
-                .orElseThrow(()->new RuntimeException("Vehicle not found"));
+                .orElseThrow(()->new EntryNotFoundException("Vehicle not found"));
         vehicle.setMake(dto.getMake());
         vehicle.setModel(dto.getModel());
         vehicle.setColor(dto.getColor());
@@ -45,7 +46,8 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleResponseDto findVehicleById(String id) {
         return toVehicleResponseDto(vehicleRepo.findById(id)
-                .orElseThrow(()->new RuntimeException("Vehicle not found")));
+                .orElseThrow(()->new EntryNotFoundException("Vehicle not found"))
+        );
     }
 
     @Override
@@ -54,18 +56,18 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public VehicleResponsePaginatedDto getAllVehicle(String searchText, int Page, int Size) {
+    public VehicleResponsePaginatedDto getAllVehicle(String searchText, int page, int size) {
         return  VehicleResponsePaginatedDto.builder()
                 .dataCount(vehicleRepo.countAllVehicle(searchText))
                 .dataList(
-                        vehicleRepo.searchAllVehicle(searchText, PageRequest.of(Page,Size))
+                        vehicleRepo.searchAllVehicle(searchText, PageRequest.of(page,size))
                                 .stream().map(this::toVehicleResponseDto).collect(Collectors.toList())
                 )
                 .build();
     }
 
     private Vehicle toVehicle(VehicleRequestDto dto){
-        if(dto==null)throw new RuntimeException("Vehicle is null");
+        if(dto==null)throw new EntryNotFoundException("Vehicle is null");
         return Vehicle.builder()
                 .id(UUID.randomUUID().toString())
                 .make(dto.getMake())
@@ -84,7 +86,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     private VehicleResponseDto toVehicleResponseDto(Vehicle vehicle){
-        if(vehicle==null)throw new RuntimeException("Vehicle is null");
+        if(vehicle==null)throw new EntryNotFoundException("Vehicle is null");
         return VehicleResponseDto.builder()
                 .id(vehicle.getId())
                 .brand(vehicle.getBrand())

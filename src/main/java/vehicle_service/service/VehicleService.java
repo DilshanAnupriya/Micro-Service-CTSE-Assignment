@@ -9,6 +9,6 @@ public interface VehicleService {
     public void updateVehicle(VehicleRequestDto dto, String id);
     public VehicleResponseDto findVehicleById(String id);
     public void deleteVehicle(String id);
-    public VehicleResponsePaginatedDto getAllVehicle(String searchText, int Page, int Size);
+    public VehicleResponsePaginatedDto getAllVehicle(String searchText, int page, int size);
 
 }

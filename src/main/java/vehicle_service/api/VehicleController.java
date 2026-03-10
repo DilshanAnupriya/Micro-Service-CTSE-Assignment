@@ -83,8 +83,8 @@ public class VehicleController
     @GetMapping("/list")
     public ResponseEntity<StandardResponseDto> getAllVehicle(
            @RequestParam String searchText,
-           @RequestParam int Page,
-           @RequestParam int Size
+           @RequestParam int page,
+           @RequestParam int size
     )
 
     {
@@ -93,7 +93,7 @@ public class VehicleController
                 StandardResponseDto.builder()
                         .code(201)
                         .message("Vehicle List !")
-                        .data( vehicleService.getAllVehicle(searchText,Page,Size))
+                        .data( vehicleService.getAllVehicle(searchText,page,size))
                         .build(),
                 HttpStatus.OK
         );
