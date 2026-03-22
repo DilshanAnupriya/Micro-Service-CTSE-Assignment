@@ -1,0 +1,13 @@
+target/
+.git/
+.gitignore
+.idea/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+*.log
+docker-compose.yml
+README.md
+DEVOPS_GUIDE.md
+.github/

@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  # ── MySQL Database ──────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: vehicle_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: vehicle_service
+      MYSQL_USER: ${MYSQL_USER:-appuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
+    ports:
+      - "3307:3306"          # Map to 3307 to avoid conflicts with a local MySQL
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - vehicle-net
+
+  # ── Vehicle Microservice ────────────────────────────────────────────────────
+  vehicle-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vehicle_service
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # DataSource — overrides application.properties
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/vehicle_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-appuser}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
+      # Eureka — point to Eureka server container if running, else disable
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_URL:-http://localhost:8761/eureka/}
+      EUREKA_CLIENT_ENABLED: ${EUREKA_ENABLED:-false}
+      # Spring profile
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-default}
+      # Server port
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+    networks:
+      - vehicle-net
+
+volumes:
+  mysql_data:
+
+networks:
+  vehicle-net:
+    driver: bridge
