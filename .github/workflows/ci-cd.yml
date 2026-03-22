@@ -33,13 +33,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Make mvnw executable
-        run: chmod +x ./mvnw
-
       - name: Build and run tests
-        run: ./mvnw verify -B
+        run: mvn verify -B
         env:
-          # Provide dummy DB values so context loads (tests use H2 or mocks)
           SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb
           SPRING_DATASOURCE_USERNAME: sa
           SPRING_DATASOURCE_PASSWORD: ""
@@ -59,7 +55,7 @@ jobs:
     name: Docker Build & Push
     runs-on: ubuntu-latest
     needs: build-test
-    if: github.event_name == 'push'   # Only on push (not PRs)
+    if: github.event_name == 'push'
 
     outputs:
       image: ${{ steps.meta.outputs.tags }}
