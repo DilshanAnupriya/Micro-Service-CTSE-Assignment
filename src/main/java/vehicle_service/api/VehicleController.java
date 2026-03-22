@@ -12,6 +12,7 @@ import vehicle_service.util.StandardResponseDto;
 @RestController
 @RequestMapping("/api/v1/vehicles")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class VehicleController
 {
     private final VehicleService vehicleService;
