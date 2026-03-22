@@ -1,0 +1,16 @@
+vehicle_service/dto/response/VehicleResponseDto$VehicleResponseDtoBuilder.class
+vehicle_service/repo/VehicleRepo.class
+vehicle_service/adviser/AppWideExceptionHandler.class
+vehicle_service/entity/Vehicle$VehicleBuilder.class
+vehicle_service/entity/Vehicle.class
+vehicle_service/api/VehicleController.class
+vehicle_service/service/impl/VehicleServiceImpl.class
+vehicle_service/service/VehicleService.class
+vehicle_service/dto/response/paginate/VehicleResponsePaginatedDto.class
+vehicle_service/dto/response/paginate/VehicleResponsePaginatedDto$VehicleResponsePaginatedDtoBuilder.class
+vehicle_service/util/StandardResponseDto.class
+vehicle_service/CarRentalApplication.class
+vehicle_service/exception/EntryNotFoundException.class
+vehicle_service/dto/request/VehicleRequestDto.class
+vehicle_service/util/StandardResponseDto$StandardResponseDtoBuilder.class
+vehicle_service/dto/response/VehicleResponseDto.class
