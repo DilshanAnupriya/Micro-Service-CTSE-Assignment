@@ -116,13 +116,21 @@ jobs:
               json.dump(d, f)
           "
 
-      - name: Update container image in task definition
+      - name: Inject env vars into task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ env.DOCKER_IMAGE }}:latest
+          environment-variables: |
+            SERVER_PORT=8080
+            SPRING_PROFILES_ACTIVE=prod
+            EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${{ secrets.EUREKA_SERVICE_URL }}
+            SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
+            SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+            KAFKA_BOOTSTRAP_SERVERS=${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
 
       - name: Deploy to ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

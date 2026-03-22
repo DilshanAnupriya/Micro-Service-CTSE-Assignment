@@ -21,9 +21,12 @@ RUN chown appuser:appgroup app.jar
 
 USER appuser
 
+# ECS injects SERVER_PORT=8080 at runtime; local dev uses docker-compose override.
 EXPOSE 8081
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget -qO- http://localhost:8081/actuator/health || exit 1
+# Health check: ECS always sets SERVER_PORT=8080 via task-definition env vars.
+# The shell expands ${SERVER_PORT:-8080} so local non-zero ports also work.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+  CMD wget -qO- "http://localhost:${SERVER_PORT:-8081}/actuator/health" || exit 1
 
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]

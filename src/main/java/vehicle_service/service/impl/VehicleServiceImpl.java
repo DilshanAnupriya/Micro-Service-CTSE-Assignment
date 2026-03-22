@@ -20,10 +20,13 @@ import java.util.stream.Collectors;
 public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepo vehicleRepo;
+    private final vehicle_service.kafka.VehicleEventProducer eventProducer;
 
     @Override
     public void saveVehicle(VehicleRequestDto dto) {
-        vehicleRepo.save(toVehicle(dto));
+        Vehicle vehicle = toVehicle(dto);
+        vehicleRepo.save(vehicle);
+        eventProducer.publishVehicleCreated(vehicle);
     }
 
     @Override
@@ -40,6 +43,8 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setImageUrl(dto.getImageUrl());
         vehicle.setDescription(dto.getDescription());
         vehicleRepo.save(vehicle);
+        
+        eventProducer.publishVehicleUpdated(vehicle);
 
     }
 
@@ -53,6 +58,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void deleteVehicle(String id) {
         vehicleRepo.deleteById(id);
+        eventProducer.publishVehicleDeleted(id);
     }
 
     @Override

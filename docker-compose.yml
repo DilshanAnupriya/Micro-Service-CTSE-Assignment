@@ -24,6 +24,38 @@ services:
     networks:
       - vehicle-net
 
+  # ── Zookeeper (for Kafka) ───────────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - vehicle-net
+
+  # ── Kafka Message Broker ────────────────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Configure listeners: PLAINTEXT for internal network, PLAINTEXT_HOST for host access
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - vehicle-net
+
   # ── Vehicle Microservice ────────────────────────────────────────────────────
   vehicle-service:
     build:
@@ -34,6 +66,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      kafka:
+        condition: service_started
     environment:
       # DataSource — overrides application.properties
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/vehicle_service?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
@@ -42,6 +76,8 @@ services:
       # Eureka — point to Eureka server container if running, else disable
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_URL:-http://localhost:8761/eureka/}
       EUREKA_CLIENT_ENABLED: ${EUREKA_ENABLED:-false}
+      # Kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       # Spring profile
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-default}
       # Server port
