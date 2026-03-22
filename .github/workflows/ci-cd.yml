@@ -15,8 +15,12 @@ env:
   CONTAINER_NAME: vehicle-service
 
 jobs:
+
+  # ─────────────────────────────────────────────
+  # JOB 1: Build
+  # ─────────────────────────────────────────────
   build-test:
-    name: Build & Test
+    name: 🔨 Build
     runs-on: ubuntu-latest
 
     steps:
@@ -30,7 +34,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build (skip tests - requires MySQL)
+      - name: Build (skip tests)
         run: mvn package -DskipTests -B
         env:
           EUREKA_CLIENT_ENABLED: "false"
@@ -42,8 +46,11 @@ jobs:
           path: target/*.jar
           retention-days: 1
 
+  # ─────────────────────────────────────────────
+  # JOB 2: Docker Build & Push
+  # ─────────────────────────────────────────────
   docker-build-push:
-    name: Docker Build & Push
+    name: 🐳 Docker Build & Push
     runs-on: ubuntu-latest
     needs: build-test
     if: github.event_name == 'push'
@@ -81,8 +88,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  # ─────────────────────────────────────────────
+  # JOB 3: Deploy to AWS ECS
+  # ─────────────────────────────────────────────
   deploy:
-    name: Deploy to AWS ECS
+    name: 🚀 Deploy to AWS ECS
     runs-on: ubuntu-latest
     needs: docker-build-push
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -102,10 +112,10 @@ jobs:
             --query taskDefinition \
             > task-definition.json
 
-      - name: Clean task definition
+      - name: Clean task definition (remove read-only fields)
         run: |
           python3 -c "
-          import json, sys
+          import json
           with open('task-definition.json') as f:
               d = json.load(f)
           for key in ['enableFaultInjection','taskDefinitionArn','revision',
@@ -116,7 +126,7 @@ jobs:
               json.dump(d, f)
           "
 
-      - name: Inject env vars into task definition
+      - name: Inject environment variables into task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
@@ -126,11 +136,13 @@ jobs:
           environment-variables: |
             SERVER_PORT=8080
             SPRING_PROFILES_ACTIVE=prod
+            EUREKA_CLIENT_ENABLED=true
             EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${{ secrets.EUREKA_SERVICE_URL }}
             SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
             SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
             SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
             KAFKA_BOOTSTRAP_SERVERS=${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
+            KAFKA_CONNECTION_STRING=${{ secrets.KAFKA_CONNECTION_STRING }}
 
       - name: Deploy to ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
